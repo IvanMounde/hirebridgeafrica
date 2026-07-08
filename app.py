@@ -294,6 +294,7 @@ def _background_fetch():
                 with app.app_context():
                     _try_fetch_jobs(force=True)
             except Exception as exc:
+                db.session.rollback()
                 app.logger.error("Background fetch error: %s", exc)
             # ATS board listings change at most a few times a day.
             # Default 4h — tune via SCRAPER_INTERVAL_SECONDS in .env.
@@ -311,8 +312,18 @@ def _do_fetch_jobs():
     from job_scraper import fetch_jobs_multi as _fetch
     t0 = _t.monotonic()
     valid_cols = set(JobPosting.__table__.columns.keys())
+    # Belt-and-suspenders: cap every string field to its actual DB column
+    # length before insert. This is what actually prevents a repeat of the
+    # salary_range bug (or any future field) from rolling back an entire
+    # batch — a single oversized value used to make Postgres reject the
+    # whole multi-hundred-row transaction, silently zeroing out the import.
+    col_max_len = {
+        c.name: c.type.length
+        for c in JobPosting.__table__.columns
+        if hasattr(c.type, "length") and c.type.length
+    }
     raw = _fetch(admin_mode=True, limit=0)
-    count = 0
+    to_insert = []
     for j in raw:
         if not j.get("title") or not j.get("application_url"):
             continue
@@ -325,13 +336,44 @@ def _do_fetch_jobs():
                 JobPosting.title == j["title"],
                 JobPosting.company == j.get("company", ""),
             ).first()
-        if not exists:
-            db.session.add(JobPosting(**{k: v for k, v in j.items() if k in valid_cols}))
-            count += 1
-            if count % 100 == 0:
-                db.session.flush()
-    if count:
-        db.session.commit()
+        if exists:
+            continue
+        data = {k: v for k, v in j.items() if k in valid_cols}
+        for key, maxlen in col_max_len.items():
+            v = data.get(key)
+            if isinstance(v, str) and len(v) > maxlen:
+                data[key] = v[:maxlen]
+        to_insert.append(data)
+
+    count = 0
+    if to_insert:
+        try:
+            # Fast path: insert everything in one transaction.
+            for data in to_insert:
+                db.session.add(JobPosting(**data))
+            db.session.commit()
+            count = len(to_insert)
+        except Exception as exc:
+            # Something still slipped past the length guard (e.g. a bad
+            # enum-like value, encoding issue, etc). Roll back and retry
+            # row-by-row so we salvage every job except the actual offender,
+            # instead of losing the whole batch like before.
+            db.session.rollback()
+            app.logger.warning(
+                "Batch job commit failed (%s) — retrying %d rows individually",
+                exc, len(to_insert),
+            )
+            for data in to_insert:
+                try:
+                    db.session.add(JobPosting(**data))
+                    db.session.commit()
+                    count += 1
+                except Exception as row_exc:
+                    db.session.rollback()
+                    app.logger.warning(
+                        "Skipped one job (title=%r) — %s",
+                        data.get("title", "?"), row_exc,
+                    )
     elapsed = round(_t.monotonic() - t0, 1)
     app.logger.info("Background fetch done: %d new jobs in %.1fs", count, elapsed)
     return count
@@ -507,7 +549,7 @@ def signin() -> str | Response:
     return render_template("auth/signin.html", form=form)
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["GET", "POST"])
 @login_required
 def logout() -> Response:
     logout_user()
