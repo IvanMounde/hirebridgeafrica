@@ -479,7 +479,7 @@ def jobs() -> str:
                 with app.app_context():
                     _try_fetch_jobs()
             except Exception:
-                pass
+                db.session.rollback()
         threading.Thread(target=_quick_fetch, daemon=True).start()
 
     return render_template("jobs.html", jobs=pagination.items, pagination=pagination,
@@ -748,8 +748,27 @@ def admin_delete_job(job_id: int) -> Response:
 @app.route("/admin/jobs/auto-fetch", methods=["POST"])
 @admin_required
 def admin_auto_fetch_jobs() -> Response:
-    count = auto_fetch_jobs()
-    flash(f"Successfully fetched {count} new jobs!", "success")
+    # IMPORTANT: don't call auto_fetch_jobs() directly here. A full scrape
+    # can take 30-90s, and Render's free tier (fractional shared CPU) treats
+    # a request that blocks that long as a dead worker and returns 502 Bad
+    # Gateway before this function even gets to respond — the fetch was
+    # actually still running server-side when that happened. Instead, kick
+    # it off in a background thread (same pattern as the scheduled scraper)
+    # and return immediately so the request completes instantly.
+    import threading
+
+    def _run():
+        try:
+            with app.app_context():
+                count = _try_fetch_jobs(force=True)
+                app.logger.info("Manual auto-fetch (admin) completed: %d new jobs", count)
+        except Exception as exc:
+            db.session.rollback()
+            app.logger.error("Manual auto-fetch (admin) failed: %s", exc)
+
+    threading.Thread(target=_run, daemon=True).start()
+    flash("Fetching jobs in the background — this can take a minute. "
+          "Refresh this page shortly to see the new count.", "info")
     return redirect(url_for("admin_dashboard"))
 
 
