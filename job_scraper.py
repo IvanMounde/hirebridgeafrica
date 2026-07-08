@@ -18,7 +18,7 @@ AFRICA SOURCES  (~400 boards + APIs + RSS):
 
 import os, re, hashlib, logging, threading
 import xml.etree.ElementTree as ET
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError as _TimeoutError
 from datetime import datetime, timezone
 
 import requests
@@ -2318,18 +2318,32 @@ def fetch_jobs_multi(query: str = "", location: str = "Remote",
             ex.submit(_safe, _reliefweb_jobs),             # UN/NGO Africa
             ex.submit(_safe, _africa_specific_sources),    # Kenya/NG/GH/ET dedicated
         ]
-        for f in as_completed(futs, timeout=max(1, deadline - _time.monotonic())):
-            try:
-                all_jobs.extend(f.result())
-            except Exception as e:
-                log.warning(f"fetch_jobs_multi future error: {e}")
-            if _time.monotonic() > deadline:
-                remaining = sum(1 for ft in futs if not ft.done())
-                log.warning(f"fetch_jobs_multi: budget {budget}s exhausted, "
-                            f"cancelling {remaining} pending source(s)")
-                for ft in futs:
-                    ft.cancel()
-                break
+        try:
+            completed_iter = as_completed(futs, timeout=max(1, deadline - _time.monotonic()))
+            for f in completed_iter:
+                try:
+                    all_jobs.extend(f.result())
+                except Exception as e:
+                    log.warning(f"fetch_jobs_multi future error: {e}")
+                if _time.monotonic() > deadline:
+                    remaining = sum(1 for ft in futs if not ft.done())
+                    log.warning(f"fetch_jobs_multi: budget {budget}s exhausted, "
+                                f"cancelling {remaining} pending source(s)")
+                    for ft in futs:
+                        ft.cancel()
+                    break
+        except _TimeoutError:
+            # as_completed's own timeout fired before every source finished.
+            # Previously this exception was uncaught here, which aborted the
+            # entire function and discarded every job gathered so far —
+            # that's the bug that made "lots of scraper log lines, zero jobs
+            # saved" possible even when nothing was wrong with the DB layer.
+            remaining = sum(1 for ft in futs if not ft.done())
+            log.warning(f"fetch_jobs_multi: budget {budget}s exhausted (as_completed timeout), "
+                        f"keeping {len(all_jobs)} jobs gathered so far, "
+                        f"cancelling {remaining} pending source(s)")
+            for ft in futs:
+                ft.cancel()
 
     all_jobs = _dedup(all_jobs)
 
