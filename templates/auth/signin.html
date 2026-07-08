@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Sign In – HireBridge Africa{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="auth-split">
+    <div class="auth-left">
+      <picture>
+          <source srcset="{{ url_for('static', filename='images/hero_banner.webp') }}" type="image/webp">
+          <img src="{{ url_for('static', filename='images/hero_banner.jpg') }}" alt="HireBridge Africa" class="auth-bg">
+        </picture>
+      <div class="auth-left-overlay">
+        <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="Logo" class="auth-logo-img">
+        <h2>Welcome back to HireBridge Africa</h2>
+        <p>Your career journey continues here. Access jobs, track applications, and manage your services.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Sign In</h2>
+        <p class="auth-sub">New to HireBridge? <a href="{{ url_for('signup') }}">Create an account</a></p>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+            <label>Email Address</label>
+            {{ form.email(class="form-control", placeholder="jane@example.com") }}
+            {% for e in form.email.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            {{ form.password(class="form-control", placeholder="Your password") }}
+            {% for e in form.password.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="form-check-inline">
+            <div class="form-check">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="{{ url_for('request_reset') }}" class="auth-forgot-link">Forgot password?</a>
+          </div>
+          <button type="submit" class="btn-primary btn-block btn-lg">Sign In</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

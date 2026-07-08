@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ service.name }} – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><a href="{{ url_for('services') }}" class="back-link"><i class="fas fa-arrow-left"></i> All Services</a><h1>{{ service.name }}</h1></div></div>
+<section class="section"><div class="container container-md">
+  <div class="svc-detail-card">
+    <p>{{ service.description }}</p>
+    {% if service.details %}<p class="svc-detail">{{ service.details }}</p>{% endif %}
+    {% if service.price %}<div class="svc-price">KES {{ '{:,}'.format(service.price) }}</div>{% endif %}
+    <a href="{{ url_for('book_service', service_id=service.id) }}" class="btn-primary btn-lg">Book This Service</a>
+  </div>
+</div></section>
+{% endblock %}

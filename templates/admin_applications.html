@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Applications – Admin | HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><h1>Manage <span class="text-gradient">Applications</span></h1></div></div>
+<section class="section"><div class="container">
+  <div class="admin-actions-bar">
+    {% for s in ['all','submitted','under_review','shortlisted','rejected'] %}
+    <a href="{{ url_for('admin_applications', status=s) }}" class="btn-ghost btn-sm {% if status_filter==s %}active{% endif %}">{{ s|replace('_',' ')|title }}</a>
+    {% endfor %}
+  </div>
+  <div class="dash-table-wrap">
+    <table class="dash-table">
+      <thead><tr><th>Applicant</th><th>Job</th><th>Type</th><th>Status</th><th>Applied</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for a in applications %}
+        <tr>
+          <td><strong>{{ a.user.full_name }}</strong><br><small>{{ a.user.email }}</small></td>
+          <td>{{ a.job.title }}<br><small>{{ a.job.company }}</small></td>
+          <td>{{ a.application_type|title }}</td>
+          <td><span class="status-badge status-{{ a.status }}">{{ a.status|replace('_',' ')|title }}</span></td>
+          <td>{{ a.applied_at.strftime('%b %d') }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('update_application_status', app_id=a.id) }}" class="inline-form">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" class="form-control-sm">
+                {% for s in ['submitted','under_review','shortlisted','rejected','withdrawn'] %}
+                <option value="{{ s }}" {% if a.status==s %}selected{% endif %}>{{ s|replace('_',' ')|title }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn-primary btn-sm">Update</button>
+            </form>
+            <form method="POST" action="{{ url_for('forward_application', app_id=a.id) }}" class="inline-form mt-1">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="email" name="recipient_email" placeholder="Forward to…" class="form-control-sm" required>
+              <button class="btn-ghost btn-sm">Forward</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center text-muted">No applications found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div></section>
+{% endblock %}

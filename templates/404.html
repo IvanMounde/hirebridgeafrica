@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}404 – HireBridge Africa{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="container">
+    <div class="error-content">
+      <div class="error-code">404</div>
+      <h2>{% if '404'=='403' %}Access Denied{% elif '404'=='404' %}Page Not Found{% else %}Something Went Wrong{% endif %}</h2>
+      <p>{% if '404'=='403' %}You don't have permission to view this page.{% elif '404'=='404' %}The page you're looking for doesn't exist.{% else %}We encountered an unexpected error. Please try again later.{% endif %}</p>
+      <a href="{{ url_for('index') }}" class="btn-primary">Go Home</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

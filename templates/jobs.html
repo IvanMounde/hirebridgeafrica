@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Find Jobs – HireBridge Africa{% endblock %}
+
+{% block content %}
+<div class="page-hero page-hero-sm">
+  <div class="container">
+    <h1>Find Your Next <span class="text-gradient">Opportunity</span></h1>
+    <p>{{ pagination.total }} jobs from across Africa and beyond</p>
+  </div>
+</div>
+
+<section class="section jobs-page">
+  <div class="container">
+    <!-- Filters -->
+    <form method="GET" action="{{ url_for('jobs') }}" class="job-filters-bar" id="jobFilterForm">
+      <!-- Title / Keyword -->
+      <div class="filter-search">
+        <i class="fas fa-search"></i>
+        <input type="text" name="q" id="filterQ" value="{{ query }}" placeholder="Title, keyword, company…" autocomplete="off">
+      </div>
+
+      <!-- Location (typable + suggestions) -->
+      <div class="filter-search filter-location-wrap" style="position:relative;">
+        <i class="fas fa-map-marker-alt"></i>
+        <input type="text" name="location" id="filterLocation" value="{{ location }}" placeholder="Country or city…" autocomplete="off">
+        <ul class="location-suggestions" id="locationSuggestions"></ul>
+      </div>
+
+      <!-- Category (searchable) -->
+      <div class="filter-category-wrap" style="position:relative;">
+        <i class="fas fa-th-large filter-cat-icon"></i>
+        <input type="text" id="categorySearch" placeholder="Search category…" autocomplete="off"
+               value="{% if cat != 'all' %}{{ cat.replace('-',' ').title() }}{% endif %}">
+        <input type="hidden" name="category" id="categoryHidden" value="{{ cat }}">
+        <ul class="category-dropdown" id="categoryDropdown"></ul>
+      </div>
+
+      <!-- Level -->
+      <select name="level">
+        <option value="all" {% if level=='all' %}selected{% endif %}>All Levels</option>
+        <option value="entry" {% if level=='entry' %}selected{% endif %}>Entry Level</option>
+        <option value="mid" {% if level=='mid' %}selected{% endif %}>Mid Level</option>
+        <option value="senior" {% if level=='senior' %}selected{% endif %}>Senior Level</option>
+        <option value="executive" {% if level=='executive' %}selected{% endif %}>Executive</option>
+        <option value="internship" {% if level=='internship' %}selected{% endif %}>Internship</option>
+      </select>
+
+      <!-- Type -->
+      <select name="type">
+        <option value="all" {% if jtype=='all' %}selected{% endif %}>All Types</option>
+        <option value="Full_time" {% if jtype=='Full_time' %}selected{% endif %}>Full-time</option>
+        <option value="Part_time" {% if jtype=='Part_time' %}selected{% endif %}>Part-time</option>
+        <option value="remote" {% if jtype=='remote' %}selected{% endif %}>Remote</option>
+        <option value="hybrid" {% if jtype=='hybrid' %}selected{% endif %}>Hybrid</option>
+        <option value="contract" {% if jtype=='contract' %}selected{% endif %}>Contract</option>
+        <option value="freelance" {% if jtype=='freelance' %}selected{% endif %}>Freelance</option>
+        <option value="internship" {% if jtype=='internship' %}selected{% endif %}>Internship</option>
+        <option value="onsite" {% if jtype=='onsite' %}selected{% endif %}>On-site</option>
+      </select>
+
+      <button type="submit" class="btn-primary">Filter</button>
+      <a href="{{ url_for('jobs') }}" class="btn-ghost">Clear</a>
+    </form>
+
+    <!-- Active filter chips -->
+    <div style="display:none" id="activeFiltersWrap">
+      <div class="active-filters" id="activeFiltersContainer"></div>
+    </div>
+
+    <!-- Results bar -->
+    <div class="results-bar">
+      <span class="results-count">
+        <strong>{{ pagination.total }}</strong> job{{ 's' if pagination.total != 1 }} found
+        {% if location or (cat and cat != 'all') or (level and level != 'all') or (jtype and jtype != 'all') or query %}
+          matching your filters
+        {% endif %}
+      </span>
+      <select class="sort-select" onchange="
+        const u=new URLSearchParams(window.location.search);
+        u.set('sort',this.value);u.set('page','1');
+        window.location.search=u.toString()">
+        <option value="date" {% if request.args.get('sort','date')=='date' %}selected{% endif %}>Newest first</option>
+        <option value="relevance" {% if request.args.get('sort')=='relevance' %}selected{% endif %}>Most relevant</option>
+      </select>
+    </div>
+
+    <!-- Job Cards Grid -->
+    {% if jobs %}
+    <div class="jobs-grid" id="jobsGrid">
+      {% for job in jobs %}
+      <div class="job-card">
+        <div class="job-card-header">
+          <div class="jc-icon"><i class="fas {{ job.company_logo or 'fa-building' }}"></i></div>
+          <div class="jc-info">
+            <h3 class="jc-title">{{ job.title }}</h3>
+            {% if job.company %}<p class="jc-company">{{ job.company }}</p>{% endif %}
+          </div>
+          <span class="job-badge job-badge-{{ job.job_type }}">{{ job.job_type|replace('_',' ')|title }}</span>
+        </div>
+        <div class="job-card-tags">
+          <span><i class="fas fa-map-marker-alt"></i>{{ job.location|clean_location }}</span>
+          <span><i class="fas fa-layer-group"></i>{{ job.category|title }}</span>
+          <span><i class="fas fa-signal"></i>{{ job.experience_level|title }}</span>
+          {% if job.salary_range %}<span><i class="fas fa-money-bill-wave"></i>{{ job.salary_range }}</span>{% endif %}
+        </div>
+        <p class="jc-desc">{% set clean_desc = job.description|strip_html %}{{ clean_desc[:160] }}{% if clean_desc|length > 160 %}…{% endif %}</p>
+        <div class="job-card-footer">
+          <span class="jc-age">
+            <i class="fas fa-clock"></i>
+            {% set da = days_ago(job.posted_date) %}
+            {% if da == 0 %}Today{% elif da == 1 %}Yesterday{% else %}{{ da }} days ago{% endif %}
+          </span>
+          <a href="{{ url_for('apply_for_job', job_id=job.id) }}" class="btn-apply-card">Apply Now</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <nav class="pagination-nav" aria-label="Job pages">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('jobs', q=query, location=location, category=cat, level=level, type=jtype, page=pagination.prev_num) }}" class="page-btn"><i class="fas fa-chevron-left"></i></a>
+      {% endif %}
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          <a href="{{ url_for('jobs', q=query, location=location, category=cat, level=level, type=jtype, page=p) }}" class="page-btn {% if p==pagination.page %}active{% endif %}">{{ p }}</a>
+        {% else %}
+          <span class="page-ellipsis">…</span>
+        {% endif %}
+      {% endfor %}
+      {% if pagination.has_next %}
+        <a href="{{ url_for('jobs', q=query, location=location, category=cat, level=level, type=jtype, page=pagination.next_num) }}" class="page-btn"><i class="fas fa-chevron-right"></i></a>
+      {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-briefcase"></i>
+      <h3>No Jobs Found</h3>
+      <p>Try adjusting your search filters or <a href="{{ url_for('jobs') }}">view all jobs</a>.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- Searchable Category & Location JS -->
+<script>
+(function () {
+  // ── Categories list ──────────────────────────────────────────────────────
+  const CATEGORIES = [
+    { value: "all",                  label: "All Categories" },
+    { value: "technology",           label: "Technology & IT" },
+    { value: "software-engineering", label: "Software Engineering" },
+    { value: "data-science",         label: "Data Science & Analytics" },
+    { value: "cybersecurity",        label: "Cybersecurity" },
+    { value: "product-management",   label: "Product Management" },
+    { value: "design",               label: "Design & Creative" },
+    { value: "ux-ui",                label: "UX / UI Design" },
+    { value: "marketing",            label: "Marketing & Growth" },
+    { value: "digital-marketing",    label: "Digital Marketing & SEO" },
+    { value: "sales",                label: "Sales & Business Development" },
+    { value: "finance",              label: "Finance & Accounting" },
+    { value: "banking",              label: "Banking & Fintech" },
+    { value: "hr",                   label: "Human Resources" },
+    { value: "operations",           label: "Operations & Logistics" },
+    { value: "supply-chain",         label: "Supply Chain & Procurement" },
+    { value: "customer-service",     label: "Customer Service & Support" },
+    { value: "legal",                label: "Legal & Compliance" },
+    { value: "healthcare",           label: "Healthcare & Medical" },
+    { value: "education",            label: "Education & Training" },
+    { value: "engineering",          label: "Engineering (Non-IT)" },
+    { value: "agriculture",          label: "Agriculture & Agritech" },
+    { value: "ngo-nonprofit",        label: "NGO / Nonprofit" },
+    { value: "media",                label: "Media & Communications" },
+    { value: "research",             label: "Research & Development" },
+    { value: "real-estate",          label: "Real Estate & Construction" },
+    { value: "hospitality",          label: "Hospitality & Tourism" },
+    { value: "manufacturing",        label: "Manufacturing & Production" },
+    { value: "energy",               label: "Energy & Environment" },
+    { value: "transport",            label: "Transport & Automotive" },
+    { value: "government",           label: "Government & Public Sector" },
+    { value: "general",              label: "General / Other" },
+  ];
+
+  // ── African countries + common global locations ──────────────────────────
+  const LOCATIONS = [
+    "Kenya","Nigeria","South Africa","Ghana","Ethiopia","Tanzania","Uganda",
+    "Rwanda","Egypt","Morocco","Tunisia","Senegal","Côte d'Ivoire","Cameroon",
+    "Zimbabwe","Zambia","Botswana","Mozambique","Madagascar","Malawi","Angola",
+    "Democratic Republic of Congo","Namibia","Sierra Leone","Liberia",
+    "Remote","Worldwide","United States","United Kingdom","Canada","Germany",
+    "France","Netherlands","Australia","India","Singapore","UAE","Saudi Arabia",
+    "Nairobi","Lagos","Accra","Johannesburg","Cape Town","Kampala","Dar es Salaam",
+    "Kigali","Addis Ababa","Cairo","Casablanca","Tunis","Dakar","Abidjan",
+    "London","New York","San Francisco","Berlin","Amsterdam","Dubai",
+  ];
+
+  // ── Category searchable input ────────────────────────────────────────────
+  const catInput    = document.getElementById("categorySearch");
+  const catHidden   = document.getElementById("categoryHidden");
+  const catDropdown = document.getElementById("categoryDropdown");
+
+  function renderCategories(filter) {
+    const q = (filter || "").toLowerCase();
+    const matches = CATEGORIES.filter(c =>
+      c.label.toLowerCase().includes(q) || c.value.toLowerCase().includes(q)
+    );
+    catDropdown.innerHTML = matches.map(c =>
+      `<li data-value="${c.value}" class="${catHidden.value === c.value ? 'active' : ''}">${c.label}</li>`
+    ).join("");
+    catDropdown.style.display = matches.length ? "block" : "none";
+  }
+
+  catInput.addEventListener("focus", () => renderCategories(catInput.value));
+  catInput.addEventListener("input", () => renderCategories(catInput.value));
+
+  catDropdown.addEventListener("mousedown", function(e) {
+    const li = e.target.closest("li");
+    if (!li) return;
+    catHidden.value = li.dataset.value;
+    catInput.value  = li.dataset.value === "all" ? "" : li.textContent;
+    catDropdown.style.display = "none";
+  });
+
+  catInput.addEventListener("blur", () => {
+    setTimeout(() => { catDropdown.style.display = "none"; }, 150);
+  });
+
+  // ── Location suggestions ─────────────────────────────────────────────────
+  const locInput = document.getElementById("filterLocation");
+  const locList  = document.getElementById("locationSuggestions");
+
+  function renderLocations(filter) {
+    const q = (filter || "").toLowerCase().trim();
+    if (!q) { locList.style.display = "none"; return; }
+    const matches = LOCATIONS.filter(l => l.toLowerCase().includes(q)).slice(0, 8);
+    if (!matches.length) { locList.style.display = "none"; return; }
+    locList.innerHTML = matches.map(l =>
+      `<li>${l}</li>`
+    ).join("");
+    locList.style.display = "block";
+  }
+
+  locInput.addEventListener("input", () => renderLocations(locInput.value));
+  locInput.addEventListener("focus", () => renderLocations(locInput.value));
+
+  locList.addEventListener("mousedown", function(e) {
+    const li = e.target.closest("li");
+    if (!li) return;
+    locInput.value = li.textContent;
+    locList.style.display = "none";
+  });
+
+  locInput.addEventListener("blur", () => {
+    setTimeout(() => { locList.style.display = "none"; }, 150);
+  });
+})();
+</script>
+
+<!-- Styles for searchable dropdowns -->
+<style>
+/* Category wrap */
+.filter-category-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 10px;
+  padding: 0 14px;
+  min-width: 200px;
+  height: 48px;
+}
+.filter-cat-icon {
+  color: var(--text-muted, #888);
+  margin-right: 8px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.filter-category-wrap input[type="text"] {
+  border: none !important;
+  outline: none !important;
+  background: transparent;
+  font-size: 0.95rem;
+  width: 100%;
+  color: var(--text, #1a1a2e);
+  padding: 0;
+  box-shadow: none !important;
+}
+
+/* Shared dropdown styles */
+.category-dropdown,
+.location-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 6px 0;
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 999;
+  display: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+}
+.category-dropdown li,
+.location-suggestions li {
+  padding: 9px 16px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text, #1a1a2e);
+  transition: background 0.15s;
+}
+.category-dropdown li:hover,
+.location-suggestions li:hover {
+  background: var(--primary-light, #f5eef8);
+  color: var(--primary, #8b1a4a);
+}
+.category-dropdown li.active {
+  background: var(--primary, #8b1a4a);
+  color: #fff;
+}
+
+/* Location wrap */
+.filter-location-wrap {
+  position: relative;
+}
+.filter-location-wrap .location-suggestions {
+  min-width: 220px;
+}
+</style>
+{% endblock %}

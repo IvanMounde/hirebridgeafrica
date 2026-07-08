@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Add Job – Admin | HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><a href="{{ url_for('admin_dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a><h1>Add New <span class="text-gradient">Job</span></h1></div></div>
+<section class="section"><div class="container container-md">
+  <form method="POST" class="job-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="form-group"><label>Job Title *</label><input type="text" name="title" class="form-control" required></div>
+      <div class="form-group"><label>Company *</label><input type="text" name="company" class="form-control" required></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Location *</label><input type="text" name="location" class="form-control" required></div>
+      <div class="form-group"><label>Salary Range</label><input type="text" name="salary_range" class="form-control" placeholder="e.g. KES 80,000–120,000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Job Type</label><select name="job_type" class="form-control"><option value="onsite">On-site</option><option value="remote">Remote</option><option value="hybrid">Hybrid</option></select></div>
+      <div class="form-group"><label>Category</label><select name="category" class="form-control"><option value="technology">Technology</option><option value="finance">Finance</option><option value="marketing">Marketing</option><option value="sales">Sales</option><option value="operations">Operations</option><option value="hr">HR</option><option value="design">Design</option><option value="general">General</option></select></div>
+      <div class="form-group"><label>Experience Level</label><select name="experience_level" class="form-control"><option value="entry">Entry</option><option value="mid">Mid</option><option value="senior">Senior</option></select></div>
+    </div>
+    <div class="form-group"><label>Description *</label><textarea name="description" class="form-control form-textarea" rows="6" required></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Skills (comma-separated)</label><input type="text" name="skills" class="form-control"></div>
+      <div class="form-group"><label>Application URL</label><input type="url" name="application_url" class="form-control" placeholder="https://…"></div>
+    </div>
+    <button type="submit" class="btn-primary btn-lg">Post Job</button>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn-ghost btn-lg">Cancel</a>
+  </form>
+</div></section>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}About Us – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <span class="section-tag">Our Story</span>
+    <h1>About <span class="text-gradient">HireBridge Africa</span></h1>
+    <p>We're on a mission to bridge talent and opportunity across the African continent.</p>
+  </div>
+</div>
+<section class="section about-mission">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <h2>Who We Are</h2>
+        <p>HireBridge Africa is a pan-African career services platform connecting skilled professionals with meaningful opportunities. We combine human expertise with smart technology to provide CV writing, interview coaching, LinkedIn optimisation, and end-to-end recruitment services.</p>
+        <p>Founded in Nairobi, we serve clients across Kenya, Nigeria, Ghana, South Africa, Rwanda and beyond.</p>
+        <div class="about-values">
+          <div class="value-item"><i class="fas fa-handshake"></i><div><h4>Integrity</h4><p>We act with honesty and transparency in everything we do.</p></div></div>
+          <div class="value-item"><i class="fas fa-rocket"></i><div><h4>Excellence</h4><p>We deliver work that sets our clients apart from the competition.</p></div></div>
+          <div class="value-item"><i class="fas fa-globe-africa"></i><div><h4>Pan-African Vision</h4><p>We believe Africa's talent is world-class and deserves world-class support.</p></div></div>
+        </div>
+      </div>
+      <div class="about-stats-box">
+        <div class="astat"><span>1,200+</span><p>Professionals Helped</p></div>
+        <div class="astat"><span>50+</span><p>Partner Companies</p></div>
+        <div class="astat"><span>10+</span><p>African Countries</p></div>
+        <div class="astat"><span>95%</span><p>Client Satisfaction</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Work With Us?</h2>
+      <p>Join thousands of African professionals who've advanced their careers with HireBridge Africa.</p>
+      <div class="cta-btns">
+        <a href="{{ url_for('signup') }}" class="btn-primary btn-lg">Get Started</a>
+        <a href="{{ url_for('contact') }}" class="btn-ghost-white btn-lg">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

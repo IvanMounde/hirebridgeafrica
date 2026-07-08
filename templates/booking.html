@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Book {{ service.name }} – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><a href="{{ url_for('services') }}" class="back-link"><i class="fas fa-arrow-left"></i> Services</a><h1>Book: <span class="text-gradient">{{ service.name }}</span></h1></div></div>
+<section class="section"><div class="container container-md">
+  <div class="booking-card">
+    <div class="booking-service-info">
+      <h3>{{ service.name }}</h3>
+      <p>{{ service.description }}</p>
+      {% if service.price %}<p class="svc-price">KES {{ '{:,}'.format(service.price) }}</p>{% endif %}
+    </div>
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="form-group">
+        <label>Preferred Date</label>
+        {{ form.preferred_date(class="form-control") }}
+      </div>
+      <div class="form-group">
+        <label>Additional Notes <span class="optional">(optional)</span></label>
+        {{ form.notes(class="form-control form-textarea", rows=4, placeholder="Tell us anything relevant…") }}
+      </div>
+      <div class="apply-disclaimer">
+        <i class="fas fa-info-circle"></i>
+        <p>Booking this service does not guarantee employment or a job offer. By booking you agree to our <a href="{{ url_for('terms') }}" target="_blank">Terms of Use</a>.</p>
+      </div>
+      <button type="submit" class="btn-primary btn-lg">Confirm Booking</button>
+    </form>
+  </div>
+</div></section>
+{% endblock %}

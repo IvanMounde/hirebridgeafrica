@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Services – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <span class="section-tag">What We Offer</span>
+    <h1>Career Services for <span class="text-gradient">Every Stage</span></h1>
+    <p>Whether you're job hunting, advancing, or hiring — we have the expertise to move you forward.</p>
+  </div>
+</div>
+
+<section class="section" id="individual-services">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">For Individuals</span>
+      <h2>Personal Career <span class="text-gradient">Services</span></h2>
+    </div>
+    <div class="services-full-grid">
+      {% set ind_ids = ['cv-writing','cv-writing','linkedin','interview-coaching','career-coaching','career-coaching','career-coaching'] %}
+      {% for svc in individual_services %}
+      <div class="svc-card" id="{{ ['cv-writing','linkedin','interview-coaching','career-coaching','career-coaching','career-coaching','career-coaching'][loop.index0] }}">
+        <div class="svc-card-inner">
+          <div class="svc-icon">
+            <i class="fas {{ ['fa-file-alt','fa-user-tie','fab fa-linkedin','fas fa-comments','fas fa-chart-line','fas fa-dollar-sign','fas fa-phone'][loop.index0] or 'fa-star' }}"></i>
+          </div>
+          <div class="svc-body">
+            <span class="svc-tag">{{ svc.tag or 'Service' }}</span>
+            <h3>{{ svc.name }}</h3>
+            <p>{{ svc.description }}</p>
+            {% if svc.details %}<p class="svc-detail">{{ svc.details }}</p>{% endif %}
+            {% if svc.price %}<div class="svc-price">KES {{ '{:,}'.format(svc.price) }}</div>{% endif %}
+          </div>
+          <div class="svc-actions">
+            <a href="{{ url_for('book_service', service_id=svc.id) }}" class="btn-primary">Book Now</a>
+            <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-ghost">Learn More</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <p>No services available yet. <a href="{{ url_for('contact') }}">Contact us</a> for more info.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section section-alt" id="corporate-services">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">For Businesses</span>
+      <h2>Corporate <span class="text-gradient">Recruitment Solutions</span></h2>
+    </div>
+    <div class="services-full-grid" id="recruitment">
+      {% for svc in corporate_services %}
+      <div class="svc-card svc-card-corp" id="{{ ['shortlisting','recruitment','mass-recruitment','background'][loop.index0] }}">
+        <div class="svc-card-inner">
+          <div class="svc-icon svc-icon-corp">
+            <i class="fas {{ ['fa-filter','fa-users','fa-user-friends','fa-shield-alt'][loop.index0] or 'fa-star' }}"></i>
+          </div>
+          <div class="svc-body">
+            <span class="svc-tag">Corporate</span>
+            <h3>{{ svc.name }}</h3>
+            <p>{{ svc.description }}</p>
+          </div>
+          <div class="svc-actions">
+            <a href="{{ url_for('contact') }}" class="btn-primary">Get a Quote</a>
+            <a href="{{ url_for('service_detail', service_id=svc.id) }}" class="btn-ghost">Learn More</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Not Sure Which Service You Need?</h2>
+      <p>Book a free 15-minute discovery call and we'll point you in the right direction.</p>
+      <div class="cta-btns">
+        <a href="{{ url_for('contact') }}" class="btn-primary btn-lg">Talk to an Expert</a>
+        <a href="{{ url_for('jobs') }}" class="btn-ghost-white btn-lg">Browse Jobs</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

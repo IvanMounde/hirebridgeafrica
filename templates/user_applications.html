@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}My Applications – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><h1>My <span class="text-gradient">Applications</span></h1></div></div>
+<section class="section"><div class="container">
+{% if applications %}
+<div class="dash-table-wrap">
+  <table class="dash-table">
+    <thead><tr><th>Job</th><th>Company</th><th>Type</th><th>Status</th><th>Applied</th><th>Action</th></tr></thead>
+    <tbody>
+      {% for a in applications %}
+      <tr>
+        <td>{{ a.job.title }}</td><td>{{ a.job.company }}</td>
+        <td>{{ a.application_type|title }}</td>
+        <td><span class="status-badge status-{{ a.status }}">{{ a.status|replace('_',' ')|title }}</span></td>
+        <td>{{ a.applied_at.strftime('%b %d, %Y') }}</td>
+        <td>{% if a.status in ('submitted','under_review') %}
+          <form method="POST" action="{{ url_for('withdraw_application', app_id=a.id) }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn-danger btn-sm" onclick="return confirm('Withdraw?')">Withdraw</button>
+          </form>
+          {% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state"><i class="fas fa-file-alt"></i><h3>No Applications Yet</h3><a href="{{ url_for('jobs') }}" class="btn-primary">Browse Jobs</a></div>
+{% endif %}
+</div></section>
+{% endblock %}

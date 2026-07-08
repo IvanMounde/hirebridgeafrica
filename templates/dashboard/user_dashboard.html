@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm">
+  <div class="container">
+    <h1>Welcome back, <span class="text-gradient">{{ current_user.full_name or current_user.username }}</span></h1>
+    <p>Track your applications and bookings from here.</p>
+  </div>
+</div>
+<section class="section dashboard-page">
+  <div class="container">
+    <div class="dashboard-grid">
+      <!-- Sidebar -->
+      <aside class="dashboard-sidebar">
+        <div class="sidebar-profile">
+          <div class="profile-avatar">{{ (current_user.full_name or current_user.username)[0].upper() }}</div>
+          <div><strong>{{ current_user.full_name or current_user.username }}</strong><span>{{ current_user.email }}</span></div>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="#bookings" class="sidebar-link active"><i class="fas fa-calendar-check"></i> My Bookings</a>
+          <a href="#applications" class="sidebar-link"><i class="fas fa-briefcase"></i> My Applications</a>
+          <a href="{{ url_for('jobs') }}" class="sidebar-link"><i class="fas fa-search"></i> Find Jobs</a>
+          <a href="{{ url_for('services') }}" class="sidebar-link"><i class="fas fa-concierge-bell"></i> Browse Services</a>
+        </nav>
+      </aside>
+      <!-- Main -->
+      <div class="dashboard-main">
+        <!-- Bookings -->
+        <div id="bookings" class="dash-section">
+          <div class="dash-section-header">
+            <h3><i class="fas fa-calendar-check"></i> My Bookings</h3>
+            <a href="{{ url_for('services') }}" class="btn-ghost btn-sm">Book a Service</a>
+          </div>
+          {% if bookings %}
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Payment</th><th>Action</th></tr></thead>
+              <tbody>
+                {% for b in bookings %}
+                <tr>
+                  <td>{{ b.service.name }}</td>
+                  <td>{{ b.preferred_date.strftime('%b %d, %Y') if b.preferred_date else 'TBD' }}</td>
+                  <td><span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span></td>
+                  <td><span class="status-badge status-{{ b.payment_status }}">{{ b.payment_status|title }}</span></td>
+                  <td>
+                    {% if b.status == 'pending' %}
+                    <form method="POST" action="{{ url_for('cancel_booking', booking_id=b.id) }}" style="display:inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-danger btn-sm" onclick="return confirm('Cancel this booking?')">Cancel</button>
+                    </form>
+                    {% else %}<span class="text-muted">—</span>{% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state"><i class="fas fa-calendar-plus"></i><h4>No bookings yet</h4><a href="{{ url_for('services') }}" class="btn-primary">Book a Service</a></div>
+          {% endif %}
+        </div>
+
+        <!-- Applications -->
+        <div id="applications" class="dash-section">
+          <div class="dash-section-header">
+            <h3><i class="fas fa-briefcase"></i> My Job Applications</h3>
+            <a href="{{ url_for('jobs') }}" class="btn-ghost btn-sm">Find Jobs</a>
+          </div>
+          {% if applications %}
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead><tr><th>Job Title</th><th>Company</th><th>Type</th><th>Status</th><th>Applied</th><th>Action</th></tr></thead>
+              <tbody>
+                {% for a in applications %}
+                <tr>
+                  <td>{{ a.job.title }}</td>
+                  <td>{{ a.job.company }}</td>
+                  <td><span class="tag-sm">{{ a.application_type|title }}</span></td>
+                  <td><span class="status-badge status-{{ a.status }}">{{ a.status|replace('_',' ')|title }}</span></td>
+                  <td>{{ a.applied_at.strftime('%b %d, %Y') }}</td>
+                  <td>
+                    {% if a.status in ('submitted','under_review') %}
+                    <form method="POST" action="{{ url_for('withdraw_application', app_id=a.id) }}" style="display:inline">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-danger btn-sm" onclick="return confirm('Withdraw this application?')">Withdraw</button>
+                    </form>
+                    {% else %}<span class="text-muted">—</span>{% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="empty-state"><i class="fas fa-file-alt"></i><h4>No applications yet</h4><a href="{{ url_for('jobs') }}" class="btn-primary">Browse Jobs</a></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

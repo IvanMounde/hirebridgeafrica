@@ -1,0 +1,37 @@
+# ── Core framework ─────────────────────────────────────────────────────────────
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-Login==0.6.3
+Flask-WTF==1.2.1
+Flask-Mail==0.9.1
+Flask-Limiter==3.5.0
+Flask-Compress==1.14
+
+# ── Security / tokens ──────────────────────────────────────────────────────────
+WTForms==3.1.1
+email-validator==2.1.0
+itsdangerous==2.1.2
+Werkzeug==3.0.1
+
+# ── Config / environment ───────────────────────────────────────────────────────
+python-dotenv==1.0.0
+
+# ── Production server ──────────────────────────────────────────────────────────
+gunicorn==21.2.0
+whitenoise==6.7.0
+
+# ── Database ───────────────────────────────────────────────────────────────────
+# psycopg2-binary is needed for PostgreSQL (Neon / Supabase / Render Postgres).
+# SQLite works out of the box (dev only). Both drivers can coexist.
+psycopg2-binary==2.9.9
+
+# ── HTTP / scraping ────────────────────────────────────────────────────────────
+requests==2.31.0
+python-dateutil==2.8.2
+
+# ── Image processing ──────────────────────────────────────────────────────────
+Pillow==10.2.0
+
+# ── Persistent resume storage (optional — falls back to local disk if unset) ──
+cloudinary==1.40.0

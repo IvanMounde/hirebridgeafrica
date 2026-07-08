@@ -1,0 +1,51 @@
+# ── Secrets — NEVER commit these ──────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# ── Flask / database ──────────────────────────────────────────────────────────
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# ── User uploads (never commit resumes) ───────────────────────────────────────
+uploads/
+static/uploads/
+
+# ── IDE / OS ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ── Logs / temp ───────────────────────────────────────────────────────────────
+*.log
+logs/
+*.bak
+*_backup.*
+
+# ── Test / coverage ───────────────────────────────────────────────────────────
+.tox/
+.coverage
+htmlcov/
+.pytest_cache/

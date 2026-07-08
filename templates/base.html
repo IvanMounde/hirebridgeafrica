@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#7b1535">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}{{ config.APP_NAME }} – Career Services{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<header id="site-header">
+    <div class="nav-container">
+        <a href="{{ url_for('index') }}" class="nav-logo">
+            <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="HireBridge Africa" class="logo-img">
+            <span class="logo-text">HireBridge<span class="logo-accent">Africa</span></span>
+        </a>
+
+        <nav class="desktop-nav" aria-label="Main navigation">
+            <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint=='index' %}active{% endif %}">Home</a>
+            <a href="{{ url_for('jobs') }}" class="nav-link {% if request.endpoint=='jobs' %}active{% endif %}">Find Jobs</a>
+            <div class="nav-dropdown">
+                <a href="{{ url_for('services') }}" class="nav-link {% if 'service' in (request.endpoint or '') %}active{% endif %}">Services <i class="fas fa-chevron-down nav-caret"></i></a>
+                <div class="dropdown-menu">
+                    <div class="dropdown-section">
+                        <p class="dropdown-heading">For Individuals</p>
+                        <a href="{{ url_for('services') }}#cv-writing"><i class="fas fa-file-alt"></i> CV Writing</a>
+                        <a href="{{ url_for('services') }}#interview-coaching"><i class="fas fa-comments"></i> Interview Coaching</a>
+                        <a href="{{ url_for('services') }}#linkedin"><i class="fab fa-linkedin"></i> LinkedIn Optimization</a>
+                        <a href="{{ url_for('services') }}#career-coaching"><i class="fas fa-chart-line"></i> Career Coaching</a>
+                    </div>
+                    <div class="dropdown-section">
+                        <p class="dropdown-heading">For Companies</p>
+                        <a href="{{ url_for('services') }}#recruitment"><i class="fas fa-users"></i> Full Recruitment</a>
+                        <a href="{{ url_for('services') }}#screening"><i class="fas fa-filter"></i> CV Shortlisting</a>
+                        <a href="{{ url_for('services') }}#background"><i class="fas fa-shield-alt"></i> Background Checks</a>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ url_for('about') }}" class="nav-link {% if request.endpoint=='about' %}active{% endif %}">About</a>
+            <a href="{{ url_for('contact') }}" class="nav-link {% if request.endpoint=='contact' %}active{% endif %}">Contact</a>
+        </nav>
+
+        <div class="nav-right">
+            {% if current_user.is_authenticated %}
+                <span class="nav-greeting"><i class="fas fa-user-circle"></i> {{ current_user.username }}</span>
+                <a href="{{ url_for('dashboard') }}" class="btn-nav-ghost">Dashboard</a>
+                <form method="POST" action="{{ url_for('logout') }}" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-nav-outline">Sign Out</button>
+                </form>
+            {% else %}
+                <a href="{{ url_for('signin') }}" class="btn-nav-ghost">Sign In</a>
+                <a href="{{ url_for('signup') }}" class="btn-nav-primary">Get Started</a>
+            {% endif %}
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Drawer -->
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<aside class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+    <div class="drawer-header">
+        <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="Logo" class="drawer-logo">
+        <span class="drawer-brand">HireBridge<span>Africa</span></span>
+        <button class="drawer-close" id="drawerClose" aria-label="Close menu"><i class="fas fa-times"></i></button>
+    </div>
+    <nav class="drawer-nav">
+        <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+        <a href="{{ url_for('jobs') }}"><i class="fas fa-briefcase"></i> Find Jobs</a>
+        <a href="{{ url_for('services') }}"><i class="fas fa-concierge-bell"></i> Services</a>
+        <a href="{{ url_for('about') }}"><i class="fas fa-info-circle"></i> About Us</a>
+        <a href="{{ url_for('contact') }}"><i class="fas fa-envelope"></i> Contact</a>
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        {% endif %}
+    </nav>
+    <div class="drawer-auth">
+        {% if current_user.is_authenticated %}
+            <p class="drawer-user">Signed in as <strong>{{ current_user.full_name or current_user.username }}</strong></p>
+            <form method="POST" action="{{ url_for('logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-block btn-outline">Sign Out</button>
+            </form>
+        {% else %}
+            <a href="{{ url_for('signin') }}" class="btn-block btn-outline">Sign In</a>
+            <a href="{{ url_for('signup') }}" class="btn-block btn-primary">Create Account</a>
+        {% endif %}
+    </div>
+</aside>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-container" id="flashContainer">
+            {% for category, message in messages %}
+                <div class="flash-item flash-{{ category }}">
+                    <i class="fas {% if category=='success' %}fa-check-circle{% elif category=='danger' %}fa-exclamation-circle{% elif category=='warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+                    <span>{{ message|safe }}</span>
+                    <button onclick="this.parentElement.remove()" class="flash-close">×</button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<main id="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="site-footer">
+    <div class="footer-top">
+        <div class="footer-grid">
+            <div class="footer-col footer-brand">
+                <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="HireBridge Africa" class="footer-logo">
+                <p>Bridging talent and opportunity across Africa. Professional career services and recruitment solutions.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="https://wa.me/254742390793" aria-label="WhatsApp" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="{{ url_for('services') }}#cv-writing">CV Writing</a>
+                <a href="{{ url_for('services') }}#linkedin">LinkedIn Optimization</a>
+                <a href="{{ url_for('services') }}#interview-coaching">Interview Coaching</a>
+                <a href="{{ url_for('services') }}#career-coaching">Career Coaching</a>
+                <a href="{{ url_for('services') }}#recruitment">Corporate Recruitment</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Company</h4>
+                <a href="{{ url_for('about') }}">About Us</a>
+                <a href="{{ url_for('jobs') }}">Job Board</a>
+                <a href="{{ url_for('contact') }}">Contact</a>
+                <a href="{{ url_for('terms') }}">Terms of Use</a>
+                <a href="{{ url_for('privacy') }}">Privacy Policy</a>
+                <a href="{{ url_for('cookies') }}">Cookie Policy</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Newsletter</h4>
+                <p>Get career tips and new job alerts weekly.</p>
+                <form action="{{ url_for('subscribe') }}" method="POST" class="footer-newsletter">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="email" name="email" placeholder="Your email address" required>
+                    <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                </form>
+                <div class="footer-contact-info">
+                    <p><i class="fas fa-map-marker-alt"></i> Nairobi, Kenya</p>
+                    <p><i class="fas fa-envelope"></i> hirebridge@gmail.com</p>
+                    <p><i class="fas fa-phone"></i> +254742390793</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© {{ current_year }} HireBridge Africa. All rights reserved. | 
+           <a href="{{ url_for('terms') }}">Terms</a> · 
+           <a href="{{ url_for('privacy') }}">Privacy</a> · 
+           <a href="{{ url_for('cookies') }}">Cookies</a>
+        </p>
+        <p class="footer-disclaimer">HireBridge Africa provides career support services. Using our services does not guarantee employment or job placement.</p>
+    </div>
+</footer>
+
+<!-- ══════════ FLOATING BUTTONS ══════════ -->
+<div class="floating-actions">
+    <a href="https://wa.me/254742390793?text=Hi%20HireBridge%20Africa%2C%20I%20need%20career%20support" 
+       class="fab-btn fab-whatsapp" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" title="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+        <span class="fab-label">WhatsApp</span>
+    </a>
+    <button class="fab-btn fab-newsletter" id="fabNewsletter" aria-label="Subscribe to newsletter" title="Subscribe to Newsletter">
+        <i class="fas fa-bell"></i>
+        <span class="fab-label">Newsletter</span>
+    </button>
+</div>
+
+<!-- Newsletter Modal -->
+<div class="modal-overlay" id="newsletterModal" role="dialog" aria-modal="true" aria-labelledby="nlModalTitle">
+    <div class="modal-card">
+        <button class="modal-close" id="nlModalClose" aria-label="Close">×</button>
+        <div class="modal-icon"><i class="fas fa-envelope-open-text"></i></div>
+        <h3 id="nlModalTitle">Stay Ahead in Your Career</h3>
+        <p>Get weekly job alerts, career tips and exclusive opportunities straight to your inbox.</p>
+        <form action="{{ url_for('subscribe') }}" method="POST" class="modal-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="name" placeholder="Your full name">
+            <input type="email" name="email" placeholder="Your email address" required>
+            <button type="submit" class="btn-primary btn-block">Subscribe Free</button>
+        </form>
+        <p class="modal-disclaimer">No spam. Unsubscribe anytime. <a href="{{ url_for('privacy') }}">Privacy Policy</a></p>
+    </div>
+</div>
+
+<!-- T&C Consent Banner (shown once) -->
+<div class="consent-banner" id="consentBanner">
+    <div class="consent-inner">
+        <i class="fas fa-cookie-bite consent-icon"></i>
+        <p>By using this site you agree to our <a href="{{ url_for('terms') }}">Terms of Use</a> and <a href="{{ url_for('privacy') }}">Privacy Policy</a>. We use cookies to improve your experience.</p>
+        <div class="consent-actions">
+            <button class="btn-primary btn-sm" id="consentAccept">Accept</button>
+            <a href="{{ url_for('cookies') }}" class="btn-ghost btn-sm">Learn More</a>
+        </div>
+    </div>
+</div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+  <ul>
+    <li><a href="{{ url_for('index') }}" class="{% if request.endpoint=='index' %}active{% endif %}">
+      <i class="fas fa-home"></i>Home</a></li>
+    <li><a href="{{ url_for('jobs') }}" class="{% if request.endpoint=='jobs' %}active{% endif %}">
+      <i class="fas fa-briefcase"></i>Jobs</a></li>
+    <li><a href="{{ url_for('services') }}" class="{% if 'service' in (request.endpoint or '') %}active{% endif %}">
+      <i class="fas fa-concierge-bell"></i>Services</a></li>
+    <li><a href="{{ url_for('about') }}" class="{% if request.endpoint=='about' %}active{% endif %}">
+      <i class="fas fa-info-circle"></i>About</a></li>
+    {% if current_user.is_authenticated %}
+    <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint=='dashboard' %}active{% endif %}">
+      <i class="fas fa-user-circle"></i>Profile</a></li>
+    {% else %}
+    <li><a href="{{ url_for('signin') }}" class="{% if request.endpoint=='signin' %}active{% endif %}">
+      <i class="fas fa-sign-in-alt"></i>Sign In</a></li>
+    {% endif %}
+  </ul>
+</nav>
+
+<!-- Jobs Loading Overlay -->
+<div class="jobs-loading-overlay" id="jobsLoadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

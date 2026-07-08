@@ -1,0 +1,67 @@
+# render.yaml — One-click deploy config for Render.com
+# Docs: https://render.com/docs/yaml-spec
+#
+# HOW TO USE:
+#   1. Push this repo to GitHub
+#   2. Go to https://dashboard.render.com → New → Web Service → Connect repo
+#   3. Render detects this file automatically
+#   4. Add your environment variables in the Render dashboard (see .env.example)
+#   5. Click Deploy
+
+services:
+  - type: web
+    name: hirebridgeafrica
+    runtime: python
+    plan: free                     # 100% free — spins down after 15 min inactivity
+    region: frankfurt              # Closest to Kenya; also try oregon if latency is high
+    branch: main
+
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      flask db upgrade || flask init-db   # run migrations, fall back to init on first deploy
+
+    startCommand: gunicorn app:app --config gunicorn.conf.py
+
+    autoDeploy: true               # Redeploys automatically on every git push
+
+    # ── Environment variables ──────────────────────────────────────────────────
+    # Set SECRET_KEY, DATABASE_URL, MAIL_* etc. in the Render dashboard.
+    # Never commit real values here. This block just documents the required keys.
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true        # Render generates a strong random value for you
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hirebridgeafrica-db
+          property: connectionString
+      - key: CLOUDINARY_URL
+        sync: false   # set manually in Render dashboard — see .env.example
+      - key: DISABLE_BACKGROUND_SCRAPER
+        value: "false"
+      - key: SCRAPER_ATS_BATCH_SIZE
+        value: "150"
+      - key: SCRAPER_MAX_WORKERS
+        value: "4"
+      - key: SCRAPER_GROUP_WORKERS
+        value: "3"
+      - key: SCRAPER_INTERVAL_SECONDS
+        value: "14400"
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: LOG_LEVEL
+        value: "info"
+
+  # ── Free PostgreSQL database ───────────────────────────────────────────────
+  # Render's free Postgres expires after 90 days — use Neon or Supabase instead
+  # for a permanently free database. See DEPLOYMENT.md for instructions.
+  # Uncomment the block below only if you want Render to manage the DB:
+  #
+  # - type: pserv
+  #   name: hirebridgeafrica-db
+  #   runtime: postgres
+  #   plan: free
+  #   databaseName: hirebridge
+  #   databaseUser: hirebridge

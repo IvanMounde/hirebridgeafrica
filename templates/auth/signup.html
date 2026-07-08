@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Create Account – HireBridge Africa{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="auth-split">
+    <div class="auth-left">
+      <picture>
+          <source srcset="{{ url_for('static', filename='images/hero_banner.webp') }}" type="image/webp">
+          <img src="{{ url_for('static', filename='images/hero_banner.jpg') }}" alt="HireBridge Africa" class="auth-bg">
+        </picture>
+      <div class="auth-left-overlay">
+        <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="Logo" class="auth-logo-img">
+        <h2>Join thousands of African professionals</h2>
+        <p>Access job listings, career services, and expert support — all in one place.</p>
+        <ul class="auth-perks">
+          <li><i class="fas fa-check-circle"></i> ATS-optimised CV writing</li>
+          <li><i class="fas fa-check-circle"></i> Interview coaching & prep</li>
+          <li><i class="fas fa-check-circle"></i> Direct job applications</li>
+          <li><i class="fas fa-check-circle"></i> HireBridge applies for you</li>
+        </ul>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Create Your Account</h2>
+        <p class="auth-sub">Already have an account? <a href="{{ url_for('signin') }}">Sign in</a></p>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name</label>
+              {{ form.full_name(class="form-control", placeholder="Jane Doe") }}
+              {% for e in form.full_name.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label>Username</label>
+              {{ form.username(class="form-control", placeholder="janedoe") }}
+              {% for e in form.username.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            {{ form.email(class="form-control", placeholder="jane@example.com") }}
+            {% for e in form.email.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+          </div>
+          <div class="form-group">
+            <label>Phone Number <span class="optional">(optional)</span></label>
+            {{ form.phone(class="form-control", placeholder="+254742390793") }}
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Password</label>
+              {{ form.password(class="form-control", placeholder="Min 8 characters") }}
+              {% for e in form.password.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label>Confirm Password</label>
+              {{ form.confirm_password(class="form-control", placeholder="Repeat password") }}
+              {% for e in form.confirm_password.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+          </div>
+          <div class="form-check required-check">
+            <input type="checkbox" id="agree_terms" name="agree_terms" required>
+            <label for="agree_terms">I have read and agree to the <a href="{{ url_for('terms') }}" target="_blank">Terms of Use</a> and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>. I understand that using HireBridge Africa services does not guarantee employment.</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="agree_marketing" name="agree_marketing">
+            <label for="agree_marketing">I'd like to receive career tips and job alerts by email (optional)</label>
+          </div>
+          <button type="submit" class="btn-primary btn-block btn-lg">Create Account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

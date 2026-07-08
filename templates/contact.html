@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Contact Us – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm">
+  <div class="container">
+    <h1>Get in <span class="text-gradient">Touch</span></h1>
+    <p>We typically respond within 24 hours on business days.</p>
+  </div>
+</div>
+<section class="section contact-page">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>Contact Information</h3>
+        <div class="contact-item"><i class="fas fa-map-marker-alt"></i><div><strong>Location</strong><p>Nairobi, Kenya</p></div></div>
+        <div class="contact-item"><i class="fas fa-envelope"></i><div><strong>Email</strong><p>hirebridge@gmail.com</p></div></div>
+        <div class="contact-item"><i class="fas fa-phone"></i><div><strong>Phone / WhatsApp</strong><p>+254742390793</p></div></div>
+        <div class="contact-item"><i class="fas fa-clock"></i><div><strong>Business Hours</strong><p>Mon–Fri: 8am – 6pm EAT</p></div></div>
+        <a href="https://wa.me/254742390793?text=Hi%20HireBridge%20Africa" target="_blank" rel="noopener" class="btn-whatsapp btn-block"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
+      </div>
+      <div class="contact-form-wrap">
+        <h3>Send Us a Message</h3>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="form-row">
+            <div class="form-group">
+              <label>Your Name</label>
+              {{ form.name(class="form-control", placeholder="Jane Doe") }}
+              {% for e in form.name.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              {{ form.email(class="form-control", placeholder="jane@example.com") }}
+              {% for e in form.email.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            {{ form.subject(class="form-control", placeholder="How can we help?") }}
+          </div>
+          <div class="form-group">
+            <label>Message</label>
+            {{ form.message(class="form-control form-textarea", placeholder="Tell us more…", rows=6) }}
+            {% for e in form.message.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+          </div>
+          <button type="submit" class="btn-primary btn-lg">Send Message <i class="fas fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

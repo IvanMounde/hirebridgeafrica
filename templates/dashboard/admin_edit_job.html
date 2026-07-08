@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Edit Job – Admin | HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm"><div class="container"><a href="{{ url_for('admin_dashboard') }}" class="back-link"><i class="fas fa-arrow-left"></i> Dashboard</a><h1>Edit <span class="text-gradient">Job</span></h1></div></div>
+<section class="section"><div class="container container-md">
+  <form method="POST" class="job-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row">
+      <div class="form-group"><label>Job Title</label><input type="text" name="title" class="form-control" value="{{ job.title }}" required></div>
+      <div class="form-group"><label>Company</label><input type="text" name="company" class="form-control" value="{{ job.company }}" required></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Location</label><input type="text" name="location" class="form-control" value="{{ job.location }}" required></div>
+      <div class="form-group"><label>Salary Range</label><input type="text" name="salary_range" class="form-control" value="{{ job.salary_range or '' }}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Job Type</label><select name="job_type" class="form-control">{% for t in ['onsite','remote','hybrid'] %}<option value="{{ t }}" {% if job.job_type==t %}selected{% endif %}>{{ t|title }}</option>{% endfor %}</select></div>
+      <div class="form-group"><label>Category</label><select name="category" class="form-control">{% for c in ['technology','finance','marketing','sales','operations','hr','design','general'] %}<option value="{{ c }}" {% if job.category==c %}selected{% endif %}>{{ c|title }}</option>{% endfor %}</select></div>
+      <div class="form-group"><label>Level</label><select name="experience_level" class="form-control">{% for l in ['entry','mid','senior'] %}<option value="{{ l }}" {% if job.experience_level==l %}selected{% endif %}>{{ l|title }}</option>{% endfor %}</select></div>
+    </div>
+    <div class="form-group"><label>Description</label><textarea name="description" class="form-control form-textarea" rows="6" required>{{ job.description }}</textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Skills</label><input type="text" name="skills" class="form-control" value="{{ job.skills or '' }}"></div>
+      <div class="form-group"><label>Application URL</label><input type="url" name="application_url" class="form-control" value="{{ job.application_url or '' }}"></div>
+    </div>
+    <button type="submit" class="btn-primary btn-lg">Save Changes</button>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn-ghost btn-lg">Cancel</a>
+  </form>
+</div></section>
+{% endblock %}

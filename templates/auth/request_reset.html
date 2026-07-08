@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Reset Password – HireBridge Africa{% endblock %}
+{% block content %}
+<section class="auth-page">
+  <div class="auth-split">
+    <div class="auth-left">
+      <picture>
+          <source srcset="{{ url_for('static', filename='images/hero_banner.webp') }}" type="image/webp">
+          <img src="{{ url_for('static', filename='images/hero_banner.jpg') }}" alt="HireBridge Africa" class="auth-bg">
+        </picture>
+      <div class="auth-left-overlay">
+        <img src="{{ url_for('static', filename='images/logo_hirebridge.png') }}" alt="Logo" class="auth-logo-img">
+        <h2>Forgot your password?</h2>
+        <p>No worries — enter your email and we'll send you a link to reset it.</p>
+      </div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-card">
+        <h2>Reset Password</h2>
+        <p class="auth-sub">Remembered it after all? <a href="{{ url_for('signin') }}">Sign in</a></p>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="form-group">
+            <label>Email Address</label>
+            {{ form.email(class="form-control", placeholder="jane@example.com") }}
+            {% for e in form.email.errors %}<span class="field-error">{{ e }}</span>{% endfor %}
+          </div>
+          <button type="submit" class="btn-primary btn-block btn-lg">Send Reset Link</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}HireBridge Africa – Bridging Talent & Opportunity{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-media">
+    <picture>
+          <source srcset="{{ url_for('static', filename='images/hero_banner.webp') }}" type="image/webp">
+          <img src="{{ url_for('static', filename='images/hero_banner.jpg') }}" alt="HireBridge Africa – Professionals" class="hero-bg-img">
+        </picture>
+    <div class="hero-overlay"></div>
+  </div>
+  <div class="hero-content container">
+    <span class="hero-badge"><i class="fas fa-map-marker-alt"></i> Pan-African Career Platform</span>
+    <h1>Your Career Bridge<br><span class="text-gradient">Across Africa</span></h1>
+    <p class="hero-sub">Professional CV writing, interview coaching, LinkedIn optimisation, and job placement support — tailored for African talent.</p>
+    <div class="hero-cta">
+      <a href="{{ url_for('jobs') }}" class="btn-primary btn-lg"><i class="fas fa-briefcase"></i> Browse Jobs</a>
+      <a href="{{ url_for('services') }}" class="btn-ghost-white btn-lg"><i class="fas fa-concierge-bell"></i> Our Services</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">2,400+</span><span class="stat-label">Jobs Listed</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">1,200+</span><span class="stat-label">Professionals Helped</span></div>
+      <div class="stat-div"></div>
+      <div class="stat"><span class="stat-num">50+</span><span class="stat-label">Partner Companies</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK SEARCH -->
+<section class="quick-search-bar">
+  <div class="container">
+    <form action="{{ url_for('jobs') }}" method="GET" class="search-form">
+      <div class="search-field"><i class="fas fa-search search-icon"></i><input type="text" name="q" placeholder="Job title, keyword…"></div>
+      <div class="search-divider"></div>
+      <div class="search-field"><i class="fas fa-map-marker-alt search-icon"></i><input type="text" name="location" placeholder="City or country…"></div>
+      <div class="search-divider"></div>
+      <div class="search-field"><i class="fas fa-layer-group search-icon"></i>
+        <select name="category">
+          <option value="all">All Categories</option>
+          <option value="technology">Technology</option>
+          <option value="finance">Finance</option>
+          <option value="marketing">Marketing</option>
+          <option value="sales">Sales</option>
+          <option value="operations">Operations</option>
+          <option value="hr">HR</option>
+          <option value="design">Design</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-primary search-btn">Search Jobs</button>
+    </form>
+  </div>
+</section>
+
+<!-- SERVICES OVERVIEW -->
+<section class="section services-overview" id="services-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">What We Offer</span>
+      <h2>Career Services Built for <span class="text-gradient">African Professionals</span></h2>
+      <p>From entry-level to executive — we have the tools, expertise, and network to accelerate your career.</p>
+    </div>
+    <div class="services-grid">
+      {% set service_cards = [
+        ('fa-file-alt','CV Writing','ATS-optimised CVs that pass automated screening and get you noticed.', 'cv-writing'),
+        ('fab fa-linkedin','LinkedIn Optimisation','Transform your profile to attract recruiters and top employers.', 'linkedin'),
+        ('fas fa-comments','Interview Coaching','Mock sessions and expert feedback to walk in with confidence.', 'interview-coaching'),
+        ('fas fa-chart-line','Career Coaching','Personalised strategy and roadmap to reach your career goals.', 'career-coaching'),
+        ('fas fa-users','Corporate Recruitment','End-to-end talent acquisition for businesses across Africa.', 'recruitment'),
+        ('fas fa-robot','AI-Powered Job Matching','Smart matching connects your profile to the right opportunities.', None)
+      ] %}
+      {% for icon, title, desc, anchor in service_cards %}
+      <a href="{{ url_for('services') }}{% if anchor %}#{{ anchor }}{% endif %}" class="service-card">
+        <div class="service-card-icon"><i class="{{ icon if icon.startswith('fa') else 'fas ' + icon }}"></i></div>
+        <h3>{{ title }}</h3>
+        <p>{{ desc }}</p>
+        <span class="service-card-link">Learn More <i class="fas fa-arrow-right"></i></span>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="section-footer-cta">
+      <a href="{{ url_for('services') }}" class="btn-primary">View All Services</a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED JOBS -->
+<section class="section section-alt featured-jobs" id="jobs-section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Latest Opportunities</span>
+      <h2>Featured <span class="text-gradient">Jobs</span></h2>
+      <p>Fresh opportunities from across Africa and remote positions worldwide.</p>
+    </div>
+    <div class="jobs-preview-grid" id="featuredJobsGrid">
+      <div class="jobs-loading"><i class="fas fa-spinner fa-spin"></i> Loading jobs…</div>
+    </div>
+    <div class="section-footer-cta">
+      <a href="{{ url_for('jobs') }}" class="btn-primary">View All Jobs <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Simple Process</span>
+      <h2>How <span class="text-gradient">HireBridge</span> Works</h2>
+    </div>
+    <div class="steps-grid">
+      {% for n, icon, title, desc in [
+        ('01','fas fa-user-plus','Create Your Profile','Sign up, upload your CV, and let us understand your career goals and aspirations.'),
+        ('02','fas fa-concierge-bell','Choose a Service','Select from our suite of individual or corporate career services tailored to your needs.'),
+        ('03','fas fa-handshake','We Get to Work','Our expert team delivers your service — from CV rewrites to full end-to-end recruitment.'),
+        ('04','fas fa-trophy','Land Your Opportunity','Apply for jobs confidently with our support. We track, follow up, and celebrate your success.'),
+      ] %}
+      <div class="step-card">
+        <div class="step-number">{{ n }}</div>
+        <div class="step-icon"><i class="{{ icon }}"></i></div>
+        <h3>{{ title }}</h3>
+        <p>{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="section section-alt testimonials">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-tag">Success Stories</span>
+      <h2>What Our <span class="text-gradient">Clients Say</span></h2>
+      <p>Real results from real professionals across Africa</p>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-quote-icon"><i class="fas fa-quote-left"></i></div>
+        <div class="testimonial-image">
+          <img src="{{ url_for('static', filename='images/ivan_mounde.jpg') }}"
+               onerror="this.style.display='none'"
+               alt="Ivan Mounde" loading="lazy">
+        </div>
+        <p class="quote">"HireBridge Africa helped me secure my dream role with expert guidance on CV optimization and interview preparation. Truly a world-class professional service!"</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">I</div>
+          <div><strong>Ivan Mounde</strong><span>Data Administrator, Top Image Africa</span></div>
+        </div>
+        <div class="stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          <i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+      </div>
+
+      <div class="testimonial-card testimonial-featured">
+        <div class="testimonial-quote-icon"><i class="fas fa-quote-left"></i></div>
+        <div class="testimonial-image">
+          <img src="{{ url_for('static', filename='images/alice_chumba.jpg') }}"
+               onerror="this.style.display='none'"
+               alt="Alice Chumba" loading="lazy">
+        </div>
+        <p class="quote">"The team at HireBridge Africa provided exceptional coaching and support. I now confidently negotiate my salary and navigate the job market with ease."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">A</div>
+          <div><strong>Alice Chumba</strong><span>Software Engineer</span></div>
+        </div>
+        <div class="stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          <i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <div class="testimonial-quote-icon"><i class="fas fa-quote-left"></i></div>
+        <div class="testimonial-image">
+          <img src="{{ url_for('static', filename='images/bridgit_kwamboka.jpg') }}"
+               onerror="this.style.display='none'"
+               alt="Bridgit Kwamboka" loading="lazy">
+        </div>
+        <p class="quote">"HireBridge Africa transformed our entire hiring process. We found highly qualified talent quickly and efficiently — their process is simply seamless."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">B</div>
+          <div><strong>Bridgit Kwamboka</strong><span>HR Director, Tech Corp</span></div>
+        </div>
+        <div class="stars">
+          <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          <i class="fas fa-star"></i><i class="fas fa-star"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Ready to Bridge to Your Next Opportunity?</h2>
+      <p>Join thousands of African professionals building successful careers with HireBridge Africa.</p>
+      <div class="cta-btns">
+        <a href="{{ url_for('signup') }}" class="btn-primary btn-lg">Get Started Free</a>
+        <a href="{{ url_for('contact') }}" class="btn-ghost-white btn-lg">Talk to Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Load featured jobs dynamically
+fetch('/api/jobs')
+  .then(r => r.json())
+  .then(jobs => {
+    const grid = document.getElementById('featuredJobsGrid');
+    if (!jobs.length) { grid.innerHTML = '<p class="no-results">No jobs found. Check back soon!</p>'; return; }
+    grid.innerHTML = jobs.slice(0, 6).map(j => `
+      <div class="job-preview-card">
+        <div class="job-card-head">
+          <div class="job-card-icon"><i class="fas ${j.company_logo || 'fa-building'}"></i></div>
+          <div class="job-card-meta">
+            <h4 class="job-card-title">${j.title}</h4>
+            <p class="job-card-company">${j.company}</p>
+          </div>
+          <span class="job-type-badge ${j.job_type}">${j.job_type}</span>
+        </div>
+        <div class="job-card-body">
+          <span class="job-tag"><i class="fas fa-map-marker-alt"></i> ${j.location}</span>
+          <span class="job-tag"><i class="fas fa-layer-group"></i> ${j.category}</span>
+          ${j.salary_range ? `<span class="job-tag"><i class="fas fa-money-bill"></i> ${j.salary_range}</span>` : ''}
+        </div>
+        <div class="job-card-footer">
+          <span class="job-age">${j.days_ago != null ? (j.days_ago === 0 ? 'Today' : j.days_ago + 'd ago') : 'Recent'}</span>
+          <a href="/job/${j.id}/apply" class="btn-apply">Apply Now</a>
+        </div>
+      </div>`).join('');
+  })
+  .catch(() => {
+    document.getElementById('featuredJobsGrid').innerHTML = '<p class="no-results">Unable to load jobs right now. <a href="/jobs">Browse all jobs</a>.</p>';
+  });
+</script>
+{% endblock %}

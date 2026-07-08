@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm">
+  <div class="container">
+    <h1>Admin <span class="text-gradient">Dashboard</span></h1>
+    <p>Manage jobs, bookings, and applications.</p>
+  </div>
+</div>
+<section class="section dashboard-page">
+  <div class="container">
+    <!-- Stats -->
+    <div class="admin-stats-grid">
+      <div class="astat-card"><i class="fas fa-users"></i><div><span>{{ total_users }}</span><p>Users</p></div></div>
+      <div class="astat-card"><i class="fas fa-calendar-check"></i><div><span>{{ total_bookings }}</span><p>Bookings</p></div></div>
+      <div class="astat-card"><i class="fas fa-hourglass-half"></i><div><span>{{ pending_bookings }}</span><p>Pending</p></div></div>
+      <div class="astat-card"><i class="fas fa-briefcase"></i><div><span>{{ active_jobs }}</span><p>Active Jobs</p></div></div>
+      <div class="astat-card"><i class="fas fa-file-alt"></i><div><span>{{ total_applications }}</span><p>Applications</p></div></div>
+      <div class="astat-card"><i class="fas fa-bell"></i><div><span>{{ subscribers }}</span><p>Subscribers</p></div></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="admin-actions-bar">
+      <a href="{{ url_for('admin_add_job') }}" class="btn-primary"><i class="fas fa-plus"></i> Add Job</a>
+      <form method="POST" action="{{ url_for('admin_auto_fetch_jobs') }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-ghost"><i class="fas fa-sync"></i> Auto-Fetch Jobs</button>
+      </form>
+      <a href="{{ url_for('admin_applications') }}" class="btn-ghost"><i class="fas fa-file-alt"></i> All Applications</a>
+    </div>
+
+    <!-- Recent Bookings -->
+    <div class="dash-section">
+      <h3>Recent Bookings</h3>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Status</th><th>Forward</th></tr></thead>
+          <tbody>
+            {% for b in recent_bookings %}
+            <tr>
+              <td>{{ b.user.full_name or b.user.username }}</td>
+              <td>{{ b.service.name }}</td>
+              <td>{{ b.preferred_date.strftime('%b %d, %Y') if b.preferred_date else 'TBD' }}</td>
+              <td><span class="status-badge status-{{ b.status }}">{{ b.status|title }}</span></td>
+              <td>
+                <form method="POST" action="{{ url_for('forward_booking', booking_id=b.id) }}" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input type="email" name="recipient_email" placeholder="Forward to email" class="form-control-sm" required>
+                  <button class="btn-primary btn-sm">Forward</button>
+                </form>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No bookings yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Recent Applications -->
+    <div class="dash-section">
+      <h3>Recent Job Applications</h3>
+      <div class="dash-table-wrap">
+        <table class="dash-table">
+          <thead><tr><th>Applicant</th><th>Job</th><th>Type</th><th>Status</th><th>Applied</th></tr></thead>
+          <tbody>
+            {% for a in recent_apps %}
+            <tr>
+              <td>{{ a.user.full_name or a.user.username }}</td>
+              <td>{{ a.job.title }}</td>
+              <td>{{ a.application_type|title }}</td>
+              <td><span class="status-badge status-{{ a.status }}">{{ a.status|replace('_',' ')|title }}</span></td>
+              <td>{{ a.applied_at.strftime('%b %d') }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">No applications yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

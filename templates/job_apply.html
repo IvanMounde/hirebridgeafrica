@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Apply – {{ job.title }} | HireBridge Africa{% endblock %}
+{% block content %}
+<div class="page-hero page-hero-sm">
+  <div class="container">
+    <a href="{{ url_for('jobs') }}" class="back-link"><i class="fas fa-arrow-left"></i> Back to Jobs</a>
+    <h1>Apply for <span class="text-gradient">{{ job.title }}</span></h1>
+    <p>{{ job.company }} · {{ job.location }}</p>
+  </div>
+</div>
+
+<section class="section apply-page">
+  <div class="container container-md">
+
+    <!-- Job Summary -->
+    <div class="job-summary-card">
+      <div class="jscard-header">
+        <div class="jscard-icon"><i class="fas {{ job.company_logo or 'fa-building' }}"></i></div>
+        <div>
+          <h3>{{ job.title }}</h3>
+          <p>{{ job.company }} · {{ job.location }}</p>
+        </div>
+        <span class="job-badge job-badge-{{ job.job_type }}">{{ job.job_type|title }}</span>
+      </div>
+      <div class="jscard-tags">
+        <span><i class="fas fa-layer-group"></i> {{ job.category|title }}</span>
+        <span><i class="fas fa-signal"></i> {{ job.experience_level|title }}</span>
+        {% if job.salary_range %}<span><i class="fas fa-money-bill-wave"></i> {{ job.salary_range }}</span>{% endif %}
+      </div>
+      <p class="jscard-desc">{% set clean = job.description|strip_html %}{{ clean[:400] }}{% if clean|length > 400 %}…{% endif %}</p>
+    </div>
+
+    <!-- Application Type Selection -->
+    <div class="apply-type-selector">
+      <h3>How would you like to apply?</h3>
+      <div class="apply-type-grid">
+        <label class="apply-type-card selected" for="typeHirebridge">
+          <input type="radio" id="typeHirebridge" name="application_type_choice" value="hirebridge" checked>
+          <div class="atc-icon"><i class="fas fa-hands-helping"></i></div>
+          <h4>Let HireBridge Apply For You</h4>
+          <p>Our expert team will prepare, tailor, and submit your application. We handle follow-ups too.</p>
+          <div class="atc-badge recommended">Recommended</div>
+        </label>
+        <label class="apply-type-card" for="typeDirect">
+          <input type="radio" id="typeDirect" name="application_type_choice" value="direct">
+          <div class="atc-icon"><i class="fas fa-user"></i></div>
+          <h4>Apply Yourself</h4>
+          <p>Submit your own application. We'll store your intent and you can apply directly at the company site.</p>
+          {% if job.application_url %}
+          <a href="{{ job.application_url }}" target="_blank" rel="noopener" class="atc-ext-link" onclick="event.stopPropagation()">
+            Apply on Company Site <i class="fas fa-external-link-alt"></i>
+          </a>
+          {% endif %}
+        </label>
+      </div>
+    </div>
+
+    <!-- Application Form -->
+    <form method="POST" enctype="multipart/form-data" class="apply-form" id="applyForm">
+      {{ form.hidden_tag() }}
+      <input type="hidden" name="application_type" id="appTypeHidden" value="hirebridge">
+
+      <div class="form-group">
+        <label>Cover Letter <span class="optional">(optional)</span></label>
+        {{ form.cover_letter(class="form-control form-textarea", placeholder="Tell the employer why you're the right fit for this role…", rows=6) }}
+      </div>
+      <div class="form-group">
+        <label>Upload CV/Resume <span class="optional">(PDF, DOC, DOCX · max 5MB)</span></label>
+        <div class="file-drop-zone" id="fileDropZone">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag and drop your CV here, or <span class="file-browse">browse</span></p>
+          <input type="file" name="resume" id="resumeInput" accept=".pdf,.doc,.docx" class="file-input">
+          <p class="file-selected" id="fileSelected"></p>
+        </div>
+      </div>
+
+      <!-- Disclaimer -->
+      <div class="apply-disclaimer">
+        <i class="fas fa-info-circle"></i>
+        <p>Submitting an application through HireBridge Africa does not guarantee an interview or employment. 
+        We act as facilitators only. By applying you agree to our <a href="{{ url_for('terms') }}" target="_blank">Terms of Use</a> 
+        and <a href="{{ url_for('privacy') }}" target="_blank">Privacy Policy</a>.</p>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary btn-lg" id="submitBtn">
+          <i class="fas fa-paper-plane"></i> <span id="submitLabel">Submit via HireBridge</span>
+        </button>
+        <a href="{{ url_for('jobs') }}" class="btn-ghost btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<script>
+const radios = document.querySelectorAll('input[name="application_type_choice"]');
+const cards = document.querySelectorAll('.apply-type-card');
+const hidden = document.getElementById('appTypeHidden');
+const label = document.getElementById('submitLabel');
+
+radios.forEach(r => {
+  r.addEventListener('change', () => {
+    cards.forEach(c => c.classList.remove('selected'));
+    r.closest('.apply-type-card').classList.add('selected');
+    hidden.value = r.value;
+    label.textContent = r.value === 'hirebridge' ? 'Submit via HireBridge' : 'Submit Application';
+  });
+});
+
+const dropZone = document.getElementById('fileDropZone');
+const fileInput = document.getElementById('resumeInput');
+const fileSelected = document.getElementById('fileSelected');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragging'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragging');
+  if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; updateFileName(); }
+});
+fileInput.addEventListener('change', updateFileName);
+function updateFileName() {
+  const f = fileInput.files[0];
+  fileSelected.textContent = f ? '✔ ' + f.name : '';
+}
+</script>
+{% endblock %}
