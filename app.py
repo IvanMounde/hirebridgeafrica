@@ -1200,10 +1200,23 @@ def _seed_default_admin() -> None:
         app.logger.warning("Could not seed admin: %s", exc)
 
 
-if __name__ == "__main__":
-    with app.app_context():
+# ── Auto-provision database tables ───────────────────────────────────────────
+# Runs on every boot — under gunicorn (production) AND under `python app.py`
+# (local dev). Render's free tier has no Shell access, so this is what
+# guarantees tables exist even if a build-time `flask init-db` didn't take.
+# Fully idempotent: create_all/init_services/_seed_default_admin all check
+# before writing, and the whole thing is wrapped so a transient DB hiccup at
+# boot (e.g. a cold Neon instance waking up) never crashes the app.
+with app.app_context():
+    try:
         db.create_all()
         init_services()
         _seed_default_admin()
+    except Exception as _exc:
+        app.logger.error("Startup DB provisioning failed: %s", _exc)
+
+
+if __name__ == "__main__":
+    with app.app_context():
         _check_production_safety()
     app.run(debug=os.environ.get("FLASK_ENV") == "development", port=5000)
