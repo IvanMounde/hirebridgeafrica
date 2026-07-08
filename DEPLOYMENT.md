@@ -201,6 +201,14 @@ When you need more capacity, upgrading is simple:
 - Set `SCRAPER_FETCH_BUDGET_SECONDS=30` in Render environment variables
 - Set `SCRAPER_ATS_BATCH_SIZE=100` to scan fewer companies per cycle
 
+**Build fails on `Pillow` with `KeyError: '__version__'` (or similar wheel-build error)**
+- This means Render used a newer Python version than this app was tested on.
+- Render no longer reads `runtime.txt` for version pinning. This repo now ships a
+  `.python-version` file (and a `PYTHON_VERSION` env var in `render.yaml`) set to
+  `3.11.9` — confirm both are present and that `PYTHON_VERSION=3.11.9` is set in
+  your Render service's environment variables, then trigger "Manual Deploy" →
+  "Clear build cache & deploy".
+
 ---
 
 ## Architecture diagram

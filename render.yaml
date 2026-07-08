@@ -29,6 +29,8 @@ services:
     # Set SECRET_KEY, DATABASE_URL, MAIL_* etc. in the Render dashboard.
     # Never commit real values here. This block just documents the required keys.
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"   # pins Python so Pillow etc. install from prebuilt wheels
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
